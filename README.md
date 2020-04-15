@@ -2,8 +2,6 @@
 
 A system to find and prune desktop files in appropriate XDG areas.
 
-![agaetr logo](https://raw.githubusercontent.com/uriel1998/agaetr/master/agaetr-open-graph.png "logo")
-
 ## Contents
  1. [About](#1-about)
  2. [License](#2-license)
@@ -17,8 +15,10 @@ A system to find and prune desktop files in appropriate XDG areas.
 ## 1. About
 
 
-`thuit` is an anglicization of  þveit, meaning "cleared area".
+`thuit` is an anglicization of  þveit, meaning "cleared area".  
 
+Basically I got tired of duplicate and broken `desktop` files all over the 
+place, and `Bleachbit` wasn't cutting it.
 
 ## 2. License
 
@@ -36,3 +36,8 @@ This project is licensed under the Apache License. For the full license, see `LI
 
 ### Roadmap:
 
+* Full list of desktop files and attributes
+* Find ones with bad/missing executables
+* Be able to output/find based on desktop attribute
+* Find and list duplicates
+* Pruning mechanism after review
