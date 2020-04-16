@@ -7,9 +7,9 @@
 #
 # Finding .desktop health
 
-########################################################################
+##############################################################################
 # Declarations
-########################################################################
+##############################################################################
 tmpfile=$(mktemp)
 tmpfile2=$(mktemp)
 
@@ -17,6 +17,8 @@ tmpfile2=$(mktemp)
 # Find .desktop files in standard locations
 ##############################################################################
 
+function find_desktop() {
+    
 # Use XDG data if possible
 directory_array=( $(echo $XDG_DATA_DIRS | sed  's/:/\/applications\n/g') )
 
@@ -60,19 +62,30 @@ cat "$tmpfile" | sort -u > "$tmpfile2"
 uniq_launchers=( $(cat "$tmpfile" | sort -u) )
 
 echo "There are ${#uniq_launchers[@]} desktop files to examine."
-read
+#read
+echo "Reading in file data:"
 for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-    printf "%s - %s\n" "$i" "${uniq_launchers[$i]}"
-    bob=$(cat ${uniq_launchers[$i]})
-    echo "$bob" | grep "Type=" 
-    echo "$bob" | grep "Icon="
-    echo "$bob" | grep "Exec="
-    echo "$bob" | grep "TryExec="
-    echo "$bob" | grep "Name="
-    echo "$bob" | grep "GenericName="
-    echo "$bob" | grep "Categories="
-    echo "$bob" | grep "Comment="
-    echo "$bob" | grep "Hidden="
-    echo "$bob" | grep "ShowIn="
-    read
+    echo "$i of ${#uniq_launchers[@]}"
+    #printf "%s - %s\n" "$i" "${uniq_launchers[$i]}"
+    bob=$(cat ${uniq_launchers[$i]}) 
+    if [ `echo "$bob" | grep -c "Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep "Type=" | cut -d = -f 2);else Type[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep "Icon=" | cut -d = -f 2);else Icon[$i]="None";fi    
+    if [ `echo "$bob" | grep -c "Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep "Exec=" | cut -d = -f 2);else Exec[$i]="None";fi
+    if [ `echo "$bob" | grep -c "TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep "TryExec=" | cut -d = -f 2);else TryExec[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep "Name=" | cut -d = -f 2);else Name[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Generic Name="` > 0 ];then Generic_Name[$i]=$(echo "$bob" | grep "Generic Name=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep "Categories=" | cut -d = -f 2);else Categories[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep "Comment=" | cut -d = -f 2);else Comment[$i]="None";fi
+    if [ `echo "$bob" | grep -c "Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep "Hidden=" | cut -d = -f 2);else Hidden[$i]="None";fi
+    if [ `echo "$bob" | grep -c "OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep "OnlyShowIn=" | cut -d = -f 2);else OnlyShowIn[$i]="None";fi
 done
+
+}
+
+
+
+##############################################################################
+# Main
+##############################################################################
+
+find_desktop
