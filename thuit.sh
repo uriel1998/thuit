@@ -94,14 +94,21 @@ function find_duplicates() {
         MatchString=${Name[$i]}
         if [ "$MatchString" != "None" ];then
             for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [[ "$MatchString" =~ ${Name[$i2]} ]];then   #Think I remembered the syntax rightly.
-                    NameDupe[$i]++
+                if [ $i2 != $i ];then 
+                    if [[ "$MatchString" =~ ${Name[$i2]} ]];then   #Think I remembered the syntax rightly.
+                        ${NameDupe[$i]}++
+                    fi
                 fi
             done
             
             for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [[ "$MatchString" =~ ${Generic_Name[$i2]} ]];then   #Think I remembered the syntax rightly.
-                    NameDupe[$i]++
+                if [ $i2 != $i ];then 
+                    if [[ "$MatchString" =~ ${Generic_Name[$i2]} ]];then   #Think I remembered the syntax rightly.
+###THIS DOES NOT WORK
+####MAKE AN ARRAY OF EACH WITH THE VALUE BEING THE INDEX ON THE OTHER ARRAY  ARRAY=()
+#ARRAY+=('foo')
+#ARRAY+=('bar')                        ${NameDupe[$i]}++
+                    fi
                 fi
             done
         fi
@@ -109,13 +116,17 @@ function find_duplicates() {
         MatchString=${Exec[$i]}
         if [ "$MatchString" != "None" ];then
             for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [[ "$MatchString" =~ ${Exec[$i2]} ]];then   #Think I remembered the syntax rightly.
-                    ExecDupe[$i]++
+                if [ $i2 != $i ];then 
+                    if [[ "$MatchString" =~ ${Exec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                        ${ExecDupe[$i]}++
+                    fi
                 fi
             done
             for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [[ "$MatchString" =~ ${TryExec[$i2]} ]];then   #Think I remembered the syntax rightly.
-                    ExecDupe[$i]++
+                if [ $i2 != $i ];then 
+                    if [[ "$MatchString" =~ ${TryExec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                        ${ExecDupe[$i]}++
+                    fi
                 fi
             done
         fi
@@ -124,10 +135,10 @@ function find_duplicates() {
     #The idea here is that you can then scroll through NameDupe and ExecDupe arrays and find matches and duplicates because match number will be -gt 1
     
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-        if [ ${NameDupe[$i]} -gt 1 ];then
+        if [ ${NameDupe[$i]} -gt 0 ];then
             printf "Duplicate name %s \nin file %s" "${Name[$i]}" "${#uniq_launchers[$i]}"
         fi
-        if [ ${ExecDupe[$i]} -gt 1 ];then
+        if [ ${ExecDupe[$i]} -gt 0 ];then
             printf "Duplicate exec string %s \nin file %s" "${Exec[$i]}" "${#uniq_launchers[$i]}"
         fi
     done
@@ -135,6 +146,7 @@ function find_duplicates() {
 
 function find_bad (){
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
+        echo "whoops" > /dev/null
         #Turn ${Exec[$i]} into full pathname (readlink, iirc)
         #[ ! -f ${Exec[$i]} ]
         #if does not exist
