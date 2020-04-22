@@ -48,6 +48,8 @@ This project is licensed under the Apache License. For the full license, see `LI
 -c - analyze crossover desktop files inside crossover installation (off by default)
 
 
+Does NOT look at wine-extension* desktop files; causes way too many false positives
+
 ## 6. TODO
 
 ### Roadmap:
