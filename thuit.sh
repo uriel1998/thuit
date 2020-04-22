@@ -130,8 +130,10 @@ function find_duplicates() {
             if [ "$MatchString" != "None" ];then
                 for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
                     if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ "${Name[$i2]}" ]];then   #Think I remembered the syntax rightly.
+                        if [[ "$MatchString" == "${Name[$i2]}" ]];then   #Think I remembered the syntax rightly.
                             NameDupe+=("$i $i2")
+                            echo " @ $MatchString ${Name[$i2]}" >> /home/steven/1.3
+                            echo " @ $i $i2" >> /home/steven/1.3
                         fi
                     fi
                 done
@@ -165,7 +167,7 @@ function find_duplicates() {
     for ((i = 0; i < ${#NameDupe[@]}; i++));do
             one=$(echo "${NameDupe[$i]}" | awk '{print $1}')
             two=$(echo "${NameDupe[$i]}" | awk '{print $2}')
-            printf "Duplicate name %s \nin files \n%s and \n%s\n\n" "${Name[$i]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}"
+            printf "Duplicate name %s \nin files \n%s and \n%s\n\n" "${Name[$i]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" >> 1.4
     done
 }
 
