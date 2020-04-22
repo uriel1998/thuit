@@ -46,20 +46,27 @@ This project is licensed under the Apache License. For the full license, see `LI
 ## 5. Usage
 
 -c - analyze crossover desktop files inside crossover installation (off by default)
+-n - Look for multiple desktop files with the same program name
+-e - Look for multiple desktop files with the same executable line
+-b - Look for desktop files with invalid executables
+-f $FILENAME - write output to $FILENAME
+
+
+-c - Check desktop files inside a Crossover installation directory 
 
 
 Does NOT look at wine-extension* desktop files; causes way too many false positives
 
 ## 6. TODO
 
--f for file output
-chooser?
 
 ### Roadmap:
 
+* interactive chooser
+* automatic chooser (with backup, of course)
+* priorities with interactive chooser
 * Full list of desktop files and attributes
 * Find ones with bad/missing executables
 * Be able to output/find based on desktop attribute
-* Find and list duplicates
 * Pruning mechanism after review
 * exact match versus find in

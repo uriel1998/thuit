@@ -14,7 +14,6 @@ tmpfile=$(mktemp)
 tmpfile2=$(mktemp)
 
 CXRAW=0
-POLRAW=0
 NAMES=0
 EXEC=0
 FILEOUT=0
@@ -70,7 +69,6 @@ function find_desktop() {
     done
 
     # Finding crossover desktop files
-    # Need to write same function for PoL
     if [ $CXRAW = 1 ];then
         crossoverpath=$(realpath ~/.cxoffice)
         if [ -d "$crossoverpath" ];then
@@ -78,6 +76,7 @@ function find_desktop() {
             launcher_array+=( $(find "$crossoverpath" -type d -iname "Launchers" -exec find '{}' -type f -iname "*.desktop" \;) )
         fi
     fi
+
 
     # So here's all the .desktop files we've found, sorting them out  
     for ((i = 0; i < ${#launcher_array[@]}; i++));do
@@ -188,10 +187,23 @@ function find_bad (){
         #if does not exist
             #which ${TryExec[$i]}
                 #if does not exist, output filename
+                # Crossover - does the first thing (before the %u) exist?
+                #Exec="/home/steven/.cxoffice/Total_Commander/desktopdata/cxmenu/StartMenu.C^5E3A_ProgramData_Microsoft_Windows_Start^2BMenu/Programs/Total+Commander/Total+Commander.lnk" %u
                 #"/home/steven/.cxoffice/Steam/desktopdata/cxmenu/Desktop.C^5E3A_users_crossover_Desktop/Bit+Odyssey.url" %u
+                
+                #if dosbox, check each conf file
                 #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
                 #/home/steven/apps/MultiMC/MultiMC
                 #steam steam://rungameid/563560
+                
+                #-probably best way (game id is at end of filename)
+                #/home/steven/.steam/steam/steamapps/appmanifest_563560.acf
+                #- could try looking in here, but holy fuckballs
+                #/home/steven/.steam/steam/userdata/58476723/563560/
+                
+                #1. Find /Unix
+                #2. Convert all \\ to \
+                #3. Run as with crossover above
                 #env WINEPREFIX="/home/steven/Games/PvZ" /home/ubuntu/buildbot/runners/wine/lutris-4.21-x86_64/bin/wine C:\\\\windows\\\\command\\\\start.exe /Unix /home/steven/Games/PvZ/dosdevices/c:/ProgramData/Microsoft/Windows/Start\\ Menu/Programs/PopCap\\ Games/Plants\\ vs.\\ Zombies/Play\\ Plants\\ vs.\\ Zombies.lnk
                 
     done
@@ -210,7 +222,6 @@ display_help() {
     echo "   -e     Parse for exec duplicates"
     echo "   -b     Parse for bad desktop files"
 	echo "   -c     Parse Crossover desktop files inside .cxoffice"    
-	echo "   -p     Parse PlayOnLinux desktop files inside .PlayOnLinux"        
     echo "   -f     Output to $file"
 }
 
@@ -241,10 +252,6 @@ option="$1"
         echo "Parsing raw Crossover files."
         shift 
         ;;        
-    -p) POLRAW=1
-        echo "Parsing raw Play On Linux files."
-        shift 
-        ;;      
     -n) NAMES=1
         echo "Looking for name duplicates"
         shift 
