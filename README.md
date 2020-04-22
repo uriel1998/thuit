@@ -52,6 +52,9 @@ Does NOT look at wine-extension* desktop files; causes way too many false positi
 
 ## 6. TODO
 
+-f for file output
+chooser?
+
 ### Roadmap:
 
 * Full list of desktop files and attributes

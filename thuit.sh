@@ -10,15 +10,15 @@
 ##############################################################################
 # Declarations
 ##############################################################################
-#tmpfile=$(mktemp)
-#tmpfile2=$(mktemp)
-tmpfile=/home/steven/1.1
-tmpfile2=/home/steven/1.2
+tmpfile=$(mktemp)
+tmpfile2=$(mktemp)
 
 CXRAW=0
 POLRAW=0
 NAMES=0
 EXEC=0
+FILEOUT=0
+OUTFILE=""
 
 ##############################################################################
 # Progress bar
@@ -49,7 +49,6 @@ function find_desktop() {
     
     # Use XDG data if possible
     #directory_array=( $(echo $XDG_DATA_DIRS | sed  's/:/\/applications\n/g') )
-
     # Other ones I found on my system that aren't in XDG data dirs for some reason
 
     #directory_array+=( $(if [ -d ~/desktop ];then realpath ~/desktop;fi) )
@@ -72,7 +71,7 @@ function find_desktop() {
 
     # Finding crossover desktop files
     # Need to write same function for PoL
-    if [ CXRAW = 1 ];then
+    if [ $CXRAW = 1 ];then
         crossoverpath=$(realpath ~/.cxoffice)
         if [ -d "$crossoverpath" ];then
             IFS=$(echo -en "\n\b")
@@ -96,20 +95,21 @@ function find_desktop() {
     echo "Reading in file data:"
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
         ProgressBar $i ${#uniq_launchers[@]}
-        #echo "$i of ${#uniq_launchers[@]}"
-        #printf "%s - %s\n" "$i" "${uniq_launchers[$i]}"
         bob=$(cat ${uniq_launchers[$i]}) 
-        if [ `echo "$bob" | grep -c -e "^Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep -e "^Type=" | cut -d = -f 2);else Type[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep -e "^Icon=" | cut -d = -f 2);else Icon[$i]="None";fi    
-        if [ `echo "$bob" | grep -c -e "^Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2);else Exec[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2);else TryExec[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2);else Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then GenericName[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2);else Categories[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2);else Comment[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2);else Hidden[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep -e "^OnlyShowIn=" | cut -d = -f 2);else OnlyShowIn[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep -e "^Type=" | cut -d = -f 2- );else Type[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep -e "^Icon=" | cut -d = -f 2- );else Icon[$i]="None";fi    
+        if [ `echo "$bob" | grep -c -e "^Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2- );else Exec[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2- );else TryExec[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2- );else Name[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then GenericName[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2- );else GenericName[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2- );else Categories[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2- );else Comment[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2- );else Hidden[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep -e "^OnlyShowIn=" | cut -d = -f 2- );else OnlyShowIn[$i]="None";fi
     done
+
+    rm $tmpfile
+    rm $tmpfile2
 }
 
 
@@ -137,13 +137,13 @@ function find_duplicates() {
                 done
             fi
         fi
-        
+    
         if [ $EXEC = 1 ];then 
             MatchString=${Exec[$i]}
             if [ "$MatchString" != "None" ];then
                 for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
                     if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ "${Exec[$i2]}" ]];then   #Think I remembered the syntax rightly.
+                        if [[ "$MatchString" == "${Exec[$i2]}" ]];then   #Think I remembered the syntax rightly.
                             ExecDupe+=("$i $i2")
                         fi
                     fi
@@ -157,14 +157,23 @@ function find_duplicates() {
         for ((i = 0; i < ${#NameDupe[@]}; i++));do
             one=$(echo "${NameDupe[$i]}" | awk '{print $1}')
             two=$(echo "${NameDupe[$i]}" | awk '{print $2}')
-            printf "Duplicate name %s in files \n%s and \n%s\n\n" "${Name[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+            if [ $FILEOUT =1 ];then
+                printf "Duplicate name %s in files \n%s and \n%s\n\n" "${Name[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" >> "$OUTFILE"
+            else
+                printf "Duplicate name %s in files \n%s and \n%s\n\n" "${Name[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+            fi
         done
     fi
     if [ $EXEC = 1 ];then
+    
         for ((i = 0; i < ${#ExecDupe[@]}; i++));do
             one=$(echo "${ExecDupe[$i]}" | awk '{print $1}')
             two=$(echo "${ExecDupe[$i]}" | awk '{print $2}')
-            printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+            if [ $FILEOUT =1 ];then
+                printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+            else
+                printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+            fi
         done
     fi
 
@@ -202,7 +211,7 @@ display_help() {
     echo "   -b     Parse for bad desktop files"
 	echo "   -c     Parse Crossover desktop files inside .cxoffice"    
 	echo "   -p     Parse PlayOnLinux desktop files inside .PlayOnLinux"        
- 
+    echo "   -f     Output to $file"
 }
 
 
@@ -219,23 +228,36 @@ option="$1"
     case $option
     in
     -h) display_help
-    exit
-    shift ;;        
+        exit
+        shift 
+        ;;        
+    -f) FILEOUT=1
+        shift
+        OUTFILE="$1"
+        shift 
+        echo "File output to $OUTFILE"
+        ;;        
+
     -c) CXRAW=1
         echo "Parsing raw Crossover files."
-    shift ;;        
+        shift 
+        ;;        
     -p) POLRAW=1
         echo "Parsing raw Play On Linux files."
-    shift ;;      
+        shift 
+        ;;      
     -n) NAMES=1
         echo "Looking for name duplicates"
-    shift ;;      
+        shift 
+        ;;      
     -e) EXEC=1
         echo "Looking for exec duplicates"
-    shift ;;      
+        shift 
+        ;;      
     -b) BAD=1
         echo "Looking for bad desktop files"
-    shift ;;      
+        shift 
+        ;;      
     esac
 done
 
