@@ -170,7 +170,7 @@ function find_duplicates() {
             one=$(echo "${ExecDupe[$i]}" | awk '{print $1}')
             two=$(echo "${ExecDupe[$i]}" | awk '{print $2}')
             if [ $FILEOUT =1 ];then
-                printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+                printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" >> "$OUTFILE"
             else
                 printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
             fi
@@ -237,7 +237,6 @@ option="$1"
         shift 
         echo "File output to $OUTFILE"
         ;;        
-
     -c) CXRAW=1
         echo "Parsing raw Crossover files."
         shift 
@@ -268,6 +267,7 @@ find_desktop
 # in .desktop files
 echo -e "\nAnalyzing for duplicates"
 
+# add in "if NAMES or EXEC is positive, do this.
 find_duplicates
 
 #not working/existing desktop files
