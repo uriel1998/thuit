@@ -104,7 +104,7 @@ function find_desktop() {
         if [ `echo "$bob" | grep -c -e "^Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2);else Exec[$i]="None";fi
         if [ `echo "$bob" | grep -c -e "^TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2);else TryExec[$i]="None";fi
         if [ `echo "$bob" | grep -c -e "^Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2);else Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then Generic_Name[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then GenericName[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
         if [ `echo "$bob" | grep -c -e "^Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2);else Categories[$i]="None";fi
         if [ `echo "$bob" | grep -c -e "^Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2);else Comment[$i]="None";fi
         if [ `echo "$bob" | grep -c -e "^Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2);else Hidden[$i]="None";fi
@@ -132,12 +132,9 @@ function find_duplicates() {
                     if [ $i2 != $i ];then 
                         if [[ "$MatchString" == "${Name[$i2]}" ]];then   #Think I remembered the syntax rightly.
                             NameDupe+=("$i $i2")
-                            echo " @ $MatchString ${Name[$i2]}" >> /home/steven/1.3
-                            echo " @ $i $i2" >> /home/steven/1.3
                         fi
                     fi
                 done
- 
             fi
         fi
         
@@ -151,24 +148,27 @@ function find_duplicates() {
                         fi
                     fi
                 done
-                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                    if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ "${TryExec[$i2]}" ]];then   #Think I remembered the syntax rightly.
-                            ExecDupe+=("$i $i2")
-                        fi
-                    fi
-                done
             fi
         fi
     done    
     
     #The idea here is that you can then scroll through NameDupe and ExecDupe arrays and find matches and duplicates because match number will be -gt 1
-    
-    for ((i = 0; i < ${#NameDupe[@]}; i++));do
+    if [ $NAMES = 1 ];then
+        for ((i = 0; i < ${#NameDupe[@]}; i++));do
             one=$(echo "${NameDupe[$i]}" | awk '{print $1}')
             two=$(echo "${NameDupe[$i]}" | awk '{print $2}')
-            printf "Duplicate name %s \nin files \n%s and \n%s\n\n" "${Name[$i]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" >> 1.4
-    done
+            printf "Duplicate name %s in files \n%s and \n%s\n\n" "${Name[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+        done
+    fi
+    if [ $EXEC = 1 ];then
+        for ((i = 0; i < ${#ExecDupe[@]}; i++));do
+            one=$(echo "${ExecDupe[$i]}" | awk '{print $1}')
+            two=$(echo "${ExecDupe[$i]}" | awk '{print $2}')
+            printf "Duplicate executable %s in files \n%s and \n%s\n\n" "${Exec[$one]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}" 
+        done
+    fi
+
+
 }
 
 function find_bad (){
