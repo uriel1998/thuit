@@ -57,3 +57,4 @@ This project is licensed under the Apache License. For the full license, see `LI
 * Be able to output/find based on desktop attribute
 * Find and list duplicates
 * Pruning mechanism after review
+* exact match versus find in

@@ -94,16 +94,16 @@ function find_desktop() {
         #echo "$i of ${#uniq_launchers[@]}"
         #printf "%s - %s\n" "$i" "${uniq_launchers[$i]}"
         bob=$(cat ${uniq_launchers[$i]}) 
-        if [ `echo "$bob" | grep -c "Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep "Type=" | cut -d = -f 2);else Type[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep "Icon=" | cut -d = -f 2);else Icon[$i]="None";fi    
-        if [ `echo "$bob" | grep -c "Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep "Exec=" | cut -d = -f 2);else Exec[$i]="None";fi
-        if [ `echo "$bob" | grep -c "TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep "TryExec=" | cut -d = -f 2);else TryExec[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep "Name=" | cut -d = -f 2);else Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Generic Name="` > 0 ];then Generic_Name[$i]=$(echo "$bob" | grep "Generic Name=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep "Categories=" | cut -d = -f 2);else Categories[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep "Comment=" | cut -d = -f 2);else Comment[$i]="None";fi
-        if [ `echo "$bob" | grep -c "Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep "Hidden=" | cut -d = -f 2);else Hidden[$i]="None";fi
-        if [ `echo "$bob" | grep -c "OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep "OnlyShowIn=" | cut -d = -f 2);else OnlyShowIn[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep -e "^Type=" | cut -d = -f 2);else Type[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep -e "^Icon=" | cut -d = -f 2);else Icon[$i]="None";fi    
+        if [ `echo "$bob" | grep -c -e "^Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2);else Exec[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2);else TryExec[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2);else Name[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then Generic_Name[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2);else Generic_Name[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2);else Categories[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2);else Comment[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2);else Hidden[$i]="None";fi
+        if [ `echo "$bob" | grep -c -e "^OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep -e "^OnlyShowIn=" | cut -d = -f 2);else OnlyShowIn[$i]="None";fi
     done
 }
 
@@ -126,20 +126,11 @@ function find_duplicates() {
                 for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
                     if [ $i2 != $i ];then 
                         if [[ "$MatchString" =~ "${Name[$i2]}" ]];then   #Think I remembered the syntax rightly.
-                            echo "$MatchString AAND ${Name[$i2]}" 
                             NameDupe+=("$i $i2")
                         fi
                     fi
                 done
-                
-                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                    if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ "${Generic_Name[$i2]}" ]];then 
-                        echo "$MatchString AAND ${Generic_Name[$i2]}" 
-                            NameDupe+=("$i $i2")
-                        fi
-                    fi
-                done
+ 
             fi
         fi
         
@@ -148,14 +139,14 @@ function find_duplicates() {
             if [ "$MatchString" != "None" ];then
                 for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
                     if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ ${Exec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                        if [[ "$MatchString" =~ "${Exec[$i2]}" ]];then   #Think I remembered the syntax rightly.
                             ExecDupe+=("$i $i2")
                         fi
                     fi
                 done
                 for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
                     if [ $i2 != $i ];then 
-                        if [[ "$MatchString" =~ ${TryExec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                        if [[ "$MatchString" =~ "${TryExec[$i2]}" ]];then   #Think I remembered the syntax rightly.
                             ExecDupe+=("$i $i2")
                         fi
                     fi
@@ -224,12 +215,19 @@ option="$1"
     exit
     shift ;;        
     -c) CXRAW=1
+        echo "Parsing raw Crossover files."
     shift ;;        
     -p) POLRAW=1
+        echo "Parsing raw Play On Linux files."
     shift ;;      
     -n) NAMES=1
+        echo "Looking for name duplicates"
     shift ;;      
     -e) EXEC=1
+        echo "Looking for exec duplicates"
+    shift ;;      
+    -b) BAD=1
+        echo "Looking for bad desktop files"
     shift ;;      
     esac
 done
