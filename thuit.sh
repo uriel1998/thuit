@@ -12,6 +12,31 @@
 ##############################################################################
 tmpfile=$(mktemp)
 tmpfile2=$(mktemp)
+CXRAW=0
+POLRAW=0
+NAMES=0
+EXEC=0
+
+##############################################################################
+# Progress bar
+# From https://github.com/fearside/ProgressBar/
+##############################################################################
+
+function ProgressBar {
+# Process data
+    let _progress=(${1}*100/${2}*100)/100
+    let _done=(${_progress}*4)/10
+    let _left=40-$_done
+# Build progressbar string lengths
+    _fill=$(printf "%${_done}s")
+    _empty=$(printf "%${_left}s")
+
+# 1.2 Build progressbar strings and print the ProgressBar line
+# 1.2.1 Output example:                           
+# 1.2.1.1 Progress : [########################################] 100%
+printf "\rProgress : [${_fill// /#}${_empty// /-}] ${_progress}%%"
+
+}
 
 ##############################################################################
 # Find .desktop files in standard locations
@@ -43,13 +68,13 @@ function find_desktop() {
     done
 
     # Finding crossover desktop files
-    # Should probably work for Play On Linux as well
-    # Just goes through and finds the *.desktop files... feed this straight to an array
-
-    crossoverpath=$(realpath ~/.cxoffice)
-    if [ -d "$crossoverpath" ];then
-        IFS=$(echo -en "\n\b")
-        launcher_array+=( $(find "$crossoverpath" -type d -iname "Launchers" -exec find '{}' -type f -iname "*.desktop" \;) )
+    # Need to write same function for PoL
+    if [ CXRAW = 1 ];then
+        crossoverpath=$(realpath ~/.cxoffice)
+        if [ -d "$crossoverpath" ];then
+            IFS=$(echo -en "\n\b")
+            launcher_array+=( $(find "$crossoverpath" -type d -iname "Launchers" -exec find '{}' -type f -iname "*.desktop" \;) )
+        fi
     fi
 
     # So here's all the .desktop files we've found, sorting them out  
@@ -65,7 +90,8 @@ function find_desktop() {
     #read
     echo "Reading in file data:"
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-        echo "$i of ${#uniq_launchers[@]}"
+        ProgressBar $i ${#uniq_launchers[@]}
+        #echo "$i of ${#uniq_launchers[@]}"
         #printf "%s - %s\n" "$i" "${uniq_launchers[$i]}"
         bob=$(cat ${uniq_launchers[$i]}) 
         if [ `echo "$bob" | grep -c "Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep "Type=" | cut -d = -f 2);else Type[$i]="None";fi
@@ -88,59 +114,62 @@ function find_desktop() {
 
 function find_duplicates() {
 
+    
 #May want to take out the Generic Name and TryExec, at least at first
     
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-        MatchString=${Name[$i]}
-        if [ "$MatchString" != "None" ];then
-            for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [ $i2 != $i ];then 
-                    if [[ "$MatchString" =~ ${Name[$i2]} ]];then   #Think I remembered the syntax rightly.
-                        ${NameDupe[$i]}++
+        ProgressBar $i ${#uniq_launchers[@]}
+        
+        if [ $NAMES = 1 ];then
+            MatchString=${Name[$i]}
+            if [ "$MatchString" != "None" ];then
+                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
+                    if [ $i2 != $i ];then 
+                        if [[ "$MatchString" =~ "${Name[$i2]}" ]];then   #Think I remembered the syntax rightly.
+                            echo "$MatchString AAND ${Name[$i2]}" 
+                            NameDupe+=("$i $i2")
+                        fi
                     fi
-                fi
-            done
-            
-            for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [ $i2 != $i ];then 
-                    if [[ "$MatchString" =~ ${Generic_Name[$i2]} ]];then   #Think I remembered the syntax rightly.
-###THIS DOES NOT WORK
-####MAKE AN ARRAY OF EACH WITH THE VALUE BEING THE INDEX ON THE OTHER ARRAY  ARRAY=()
-#ARRAY+=('foo')
-#ARRAY+=('bar')                        ${NameDupe[$i]}++
+                done
+                
+                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
+                    if [ $i2 != $i ];then 
+                        if [[ "$MatchString" =~ "${Generic_Name[$i2]}" ]];then 
+                        echo "$MatchString AAND ${Generic_Name[$i2]}" 
+                            NameDupe+=("$i $i2")
+                        fi
                     fi
-                fi
-            done
+                done
+            fi
         fi
-
-        MatchString=${Exec[$i]}
-        if [ "$MatchString" != "None" ];then
-            for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [ $i2 != $i ];then 
-                    if [[ "$MatchString" =~ ${Exec[$i2]} ]];then   #Think I remembered the syntax rightly.
-                        ${ExecDupe[$i]}++
+        
+        if [ $EXEC = 1 ];then 
+            MatchString=${Exec[$i]}
+            if [ "$MatchString" != "None" ];then
+                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
+                    if [ $i2 != $i ];then 
+                        if [[ "$MatchString" =~ ${Exec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                            ExecDupe+=("$i $i2")
+                        fi
                     fi
-                fi
-            done
-            for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
-                if [ $i2 != $i ];then 
-                    if [[ "$MatchString" =~ ${TryExec[$i2]} ]];then   #Think I remembered the syntax rightly.
-                        ${ExecDupe[$i]}++
+                done
+                for ((i2 = 0; i2 < ${#uniq_launchers[@]}; i2++));do
+                    if [ $i2 != $i ];then 
+                        if [[ "$MatchString" =~ ${TryExec[$i2]} ]];then   #Think I remembered the syntax rightly.
+                            ExecDupe+=("$i $i2")
+                        fi
                     fi
-                fi
-            done
+                done
+            fi
         fi
     done    
     
     #The idea here is that you can then scroll through NameDupe and ExecDupe arrays and find matches and duplicates because match number will be -gt 1
     
-    for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-        if [ ${NameDupe[$i]} -gt 0 ];then
-            printf "Duplicate name %s \nin file %s" "${Name[$i]}" "${#uniq_launchers[$i]}"
-        fi
-        if [ ${ExecDupe[$i]} -gt 0 ];then
-            printf "Duplicate exec string %s \nin file %s" "${Exec[$i]}" "${#uniq_launchers[$i]}"
-        fi
+    for ((i = 0; i < ${#NameDupe[@]}; i++));do
+            one=$(echo "${NameDupe[$i]}" | awk '{print $1}')
+            two=$(echo "${NameDupe[$i]}" | awk '{print $2}')
+            printf "Duplicate name %s \nin files \n%s and \n%s\n\n" "${Name[$i]}" "${uniq_launchers[$one]}" "${uniq_launchers[$two]}"
     done
 }
 
@@ -161,18 +190,58 @@ function find_bad (){
     done
 }
 
+##############################################################################
+# Show help on cli
+##############################################################################
+
+display_help() {
+	echo "usage: thuit.sh [-h][-c][-p]"
+	echo " "
+	echo "optional arguments:"
+	echo "   -h     show this help message and exit"
+    echo "   -n     Parse for name duplicates"
+    echo "   -e     Parse for exec duplicates"
+    echo "   -b     Parse for bad desktop files"
+	echo "   -c     Parse Crossover desktop files inside .cxoffice"    
+	echo "   -p     Parse PlayOnLinux desktop files inside .PlayOnLinux"        
+ 
+}
+
 
 ##############################################################################
 # Main
 ##############################################################################
+
+##############################################################################
+# Command line options
+##############################################################################
+
+while [ $# -gt 0 ]; do
+option="$1"
+    case $option
+    in
+    -h) display_help
+    exit
+    shift ;;        
+    -c) CXRAW=1
+    shift ;;        
+    -p) POLRAW=1
+    shift ;;      
+    -n) NAMES=1
+    shift ;;      
+    -e) EXEC=1
+    shift ;;      
+    esac
+done
 
 find_desktop
 
 # NEED TO PUT IN SOMETHING TO HANDLE THINGS LIKE THIS:
 #[Desktop Action Remove]
 # in .desktop files
+echo -e "\nAnalyzing for duplicates"
 
 find_duplicates
 
 #not working/existing desktop files
-find_bad
+#find_bad

@@ -45,6 +45,8 @@ This project is licensed under the Apache License. For the full license, see `LI
 
 ## 5. Usage
 
+-c - analyze crossover desktop files inside crossover installation (off by default)
+
 
 ## 6. TODO
 
