@@ -282,14 +282,15 @@ function find_bad (){
 ##############################################################################
 
 display_help() {
-	echo "usage: thuit.sh [-h][-c][-p]"
+	echo "usage: thuit.sh [-h][-n][-e][-b][-x][-c]"
 	echo " "
 	echo "optional arguments:"
 	echo "   -h     show this help message and exit"
     echo "   -n     Parse for name duplicates"
     echo "   -e     Parse for exec duplicates"
     echo "   -b     Parse for bad desktop files"
-	echo "   -c     Parse Crossover desktop files inside .cxoffice"    
+    echo "   -c     Parse for missing Categories"    
+	echo "   -x     Parse Crossover desktop files inside .cxoffice"    
     echo "   -f     Output to $file"
 }
 
@@ -317,7 +318,11 @@ option="$1"
         shift 
         echo "File output to $OUTFILE"
         ;;        
-    -c) CXRAW=1
+    -c) CATEGORIES=1
+        echo "Parsing for missing categories"
+        shift
+        ;;
+    -x) CXRAW=1
         echo "Parsing raw Crossover files."
         shift 
         ;;        
@@ -344,7 +349,13 @@ find_desktop
 echo -e "\nAnalyzing for duplicates"
 
 # add in "if NAMES or EXEC is positive, do this.
-find_duplicates
+if [ "$NAMES" = "1" ];then
+    find_duplicates
+fi
+if [ "$CATEGORIES" = "1" ];then
+    find_missing_categories
+fi
+
 
 #not working/existing desktop files
 #find_bad
