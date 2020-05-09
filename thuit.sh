@@ -50,14 +50,14 @@ function find_desktop() {
     #directory_array=( $(echo $XDG_DATA_DIRS | sed  's/:/\/applications\n/g') )
     # Other ones I found on my system that aren't in XDG data dirs for some reason
 
-    #directory_array+=( $(if [ -d ~/desktop ];then realpath ~/desktop;fi) )
+    directory_array+=( $(if [ -d ~/desktop ];then realpath ~/desktop;fi) )
     directory_array+=( $(if [ -d ~/Desktop ];then realpath ~/Desktop;fi) )
-    #directory_array+=( $(if [ -d ~/.gnome/apps ];then realpath ~/.gnome/apps;fi) )
+    directory_array+=( $(if [ -d ~/.gnome/apps ];then realpath ~/.gnome/apps;fi) )
     directory_array+=( $(if [ -d ~/.local/share/applications ];then realpath ~/.local/share/applications;fi) )
-    #directory_array+=( $(if [ -d /usr/share/applications ];then echo "/usr/share/applications";fi) )
-    #directory_array+=( $(if [ -d /usr/local/share/applications ];then echo "/usr/local/share/applications";fi) )
-    #directory_array+=( $(if [ -d /usr/share/gdm/applications ];then echo "/usr/share/gdm/applications";fi) )
-    #directory_array+=( $(if [ -d /usr/share/applications/kde ];then echo "/usr/share/applications/kde";fi) )
+    directory_array+=( $(if [ -d /usr/share/applications ];then echo "/usr/share/applications";fi) )
+    directory_array+=( $(if [ -d /usr/local/share/applications ];then echo "/usr/local/share/applications";fi) )
+    directory_array+=( $(if [ -d /usr/share/gdm/applications ];then echo "/usr/share/gdm/applications";fi) )
+    directory_array+=( $(if [ -d /usr/share/applications/kde ];then echo "/usr/share/applications/kde";fi) )
 
     # I am tempted to put /etc/xdg/autostart and ~/.config/autostart in here, but those 
     # have some special things that I'd like to avoid...
@@ -77,7 +77,6 @@ function find_desktop() {
         fi
     fi
 
-
     # So here's all the .desktop files we've found, sorting them out  
     for ((i = 0; i < ${#launcher_array[@]}; i++));do
         printf "%s\n" "${launcher_array[$i]}"  >> "$tmpfile"
@@ -90,21 +89,21 @@ function find_desktop() {
     uniq_launchers=( $(cat "$tmpfile2" | sort -u) )
 
     echo "There are ${#uniq_launchers[@]} desktop files to examine."
-    #read
+    
     echo "Reading in file data:"
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
         ProgressBar $i ${#uniq_launchers[@]}
         bob=$(cat ${uniq_launchers[$i]}) 
-        if [ `echo "$bob" | grep -c -e "^Type="` > 0 ];then Type[$i]=$(echo "$bob" | grep -e "^Type=" | cut -d = -f 2- );else Type[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Icon="` > 0 ];then Icon[$i]=$(echo "$bob" | grep -e "^Icon=" | cut -d = -f 2- );else Icon[$i]="None";fi    
-        if [ `echo "$bob" | grep -c -e "^Exec="` > 0 ];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2- );else Exec[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^TryExec="` > 0 ];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2- );else TryExec[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Name="` > 0 ];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2- );else Name[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^GenericName="` > 0 ];then GenericName[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2- );else GenericName[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Categories="` > 0 ];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2- );else Categories[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Comment="` > 0 ];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2- );else Comment[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^Hidden="` > 0 ];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2- );else Hidden[$i]="None";fi
-        if [ `echo "$bob" | grep -c -e "^OnlyShowIn="` > 0 ];then OnlyShowIn[$i]=$(echo "$bob" | grep -e "^OnlyShowIn=" | cut -d = -f 2- );else OnlyShowIn[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Type="` > 0 ]];then Type[$i]=$(echo "$bob" | grep -e "^Type=" | cut -d = -f 2- );else Type[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Icon="` > 0 ]];then Icon[$i]=$(echo "$bob" | grep -e "^Icon=" | cut -d = -f 2- );else Icon[$i]="None";fi    
+        if [[ `echo "$bob" | grep -c -e "^Exec="` > 0 ]];then Exec[$i]=$(echo "$bob" | grep -e "^Exec=" | cut -d = -f 2- );else Exec[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^TryExec="` > 0 ]];then TryExec[$i]=$(echo "$bob" | grep -e "^TryExec=" | cut -d = -f 2- );else TryExec[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Name="` > 0 ]];then Name[$i]=$(echo "$bob" | grep -e "^Name=" | cut -d = -f 2- );else Name[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^GenericName="` > 0 ]];then GenericName[$i]=$(echo "$bob" | grep -e "^GenericName=" | cut -d = -f 2- );else GenericName[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Categories="` > 0 ]];then Categories[$i]=$(echo "$bob" | grep -e "^Categories=" | cut -d = -f 2- );else Categories[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Comment="` > 0 ]];then Comment[$i]=$(echo "$bob" | grep -e "^Comment=" | cut -d = -f 2- );else Comment[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^Hidden="` > 0 ]];then Hidden[$i]=$(echo "$bob" | grep -e "^Hidden=" | cut -d = -f 2- );else Hidden[$i]="None";fi
+        if [[ `echo "$bob" | grep -c -e "^OnlyShowIn="` > 0 ]];then OnlyShowIn[$i]=$(echo "$bob" | grep -e "^OnlyShowIn=" | cut -d = -f 2- );else OnlyShowIn[$i]="None";fi
     done
 
     rm $tmpfile
@@ -115,13 +114,14 @@ function find_desktop() {
 
 function find_missing_categories() {
     
+    
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
         ProgressBar $i ${#uniq_launchers[@]}
-        if [[ "${Categories[$i]}" == "None" ]];then
-            if [ $FILEOUT =1 ];then
-                printf "No category for %s in file\n%s\n "${Name[$i]}" "${uniq_launchers[$i]}" >> "$OUTFILE"
+        if [[ "${Categories[$i]}" = "" ]] || [[ "${Categories[$i]}" = "None" ]];then
+            if [ "$FILEOUT" = "1" ];then
+                printf "\nNo category for %s in file\n%s\n" "${Name[$i]}" "${uniq_launchers[$i]}" >> "$OUTFILE"
             else
-                printf "No category for %s in file\n%s\n "${Name[$i]}" "${uniq_launchers[$i]}"
+                printf "\nNo category for %s in file\n%s\n" "${Name[$i]}" "${uniq_launchers[$i]}"
             fi
         fi
         
@@ -253,7 +253,7 @@ function find_bad (){
                 BadExec+=("$i")
             fi
         fi
-        fi
+        
    
                 # Crossover - does the first thing (before the %u) exist?
                 
@@ -346,13 +346,16 @@ find_desktop
 # NEED TO PUT IN SOMETHING TO HANDLE THINGS LIKE THIS:
 #[Desktop Action Remove]
 # in .desktop files
-echo -e "\nAnalyzing for duplicates"
 
 # add in "if NAMES or EXEC is positive, do this.
 if [ "$NAMES" = "1" ];then
+    echo -e "\n"
+    echo "Analyzing for duplicates now."
     find_duplicates
 fi
 if [ "$CATEGORIES" = "1" ];then
+    echo -e "\n"
+    echo "Analyzing for missing categories now."
     find_missing_categories
 fi
 
