@@ -112,6 +112,22 @@ function find_desktop() {
 }
 
 
+
+function find_missing_categories() {
+    
+    for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
+        ProgressBar $i ${#uniq_launchers[@]}
+        if [[ "${Categories[$i]}" == "None" ]];
+            if [ $FILEOUT =1 ];then
+                printf "No category for %s in file\n%s\n "${Name[$i]}" "${uniq_launchers[$i]}" >> "$OUTFILE"
+            else
+                printf "No category for %s in file\n%s\n "${Name[$i]}" "${uniq_launchers[$i]}"
+            fi
+        fi
+        
+    done
+}
+
 ##############################################################################
 # Find duplicate names and executables
 ##############################################################################
@@ -181,15 +197,66 @@ function find_duplicates() {
 
 function find_bad (){
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
-        echo "whoops" > /dev/null
-        #Turn ${Exec[$i]} into full pathname (readlink, iirc)
-        #[ ! -f ${Exec[$i]} ]
-        #if does not exist
-            #which ${TryExec[$i]}
-                #if does not exist, output filename
+        TestExec=""
+        TestTryExec=""
+#TODO - READLINK DOES NOT SEEM TO WORK????
+        #Does it contain cxmenu?
+        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            if [ "${TryExec[$i}" != "None" ];then   # TODO:  TRYEXEC is sometimes just the base without the config
+                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
+            fi
+        fi
+        
+        
+                #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
+   
+        #Does it contain dosbox?
+        if [[ "${Exec[$i]}" == *"dosbox"* ]]; then
+
+
+
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            if [ "${TryExec[$i}" != "None" ];then 
+                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
+            fi
+        fi
+        
+        #Does it contain steam?
+        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            if [ "${TryExec[$i}" != "None" ];then 
+                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
+            fi
+        fi
+        #Does it contain wineprefix
+        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            if [ "${TryExec[$i}" != "None" ];then 
+                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
+            fi
+        fi
+        #Is it "regular"?
+        if [ -z "$TestExec" ];then
+            TestExec=$(readlink ${Exec[$i]})
+            if [ "${TryExec[$i}" != "None" ];then 
+                TestTryExec=$(readlink ${TryExec[$i]})
+            fi
+        fi
+
+
+
+
+        
+        if [ ! -f "$TestExec" ];then
+            if [ ! -f "$TestTryExec" ];then
+                BadExec+=("$i")
+            fi
+        fi
+        fi
+   
                 # Crossover - does the first thing (before the %u) exist?
-                #Exec="/home/steven/.cxoffice/Total_Commander/desktopdata/cxmenu/StartMenu.C^5E3A_ProgramData_Microsoft_Windows_Start^2BMenu/Programs/Total+Commander/Total+Commander.lnk" %u
-                #"/home/steven/.cxoffice/Steam/desktopdata/cxmenu/Desktop.C^5E3A_users_crossover_Desktop/Bit+Odyssey.url" %u
+                
                 
                 #if dosbox, check each conf file
                 #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
@@ -205,6 +272,7 @@ function find_bad (){
                 #2. Convert all \\ to \
                 #3. Run as with crossover above
                 #env WINEPREFIX="/home/steven/Games/PvZ" /home/ubuntu/buildbot/runners/wine/lutris-4.21-x86_64/bin/wine C:\\\\windows\\\\command\\\\start.exe /Unix /home/steven/Games/PvZ/dosdevices/c:/ProgramData/Microsoft/Windows/Start\\ Menu/Programs/PopCap\\ Games/Plants\\ vs.\\ Zombies/Play\\ Plants\\ vs.\\ Zombies.lnk
+                
                 
     done
 }
@@ -225,6 +293,7 @@ display_help() {
     echo "   -f     Output to $file"
 }
 
+# for menus https://serverfault.com/questions/144939/multi-select-menu-in-bash-script
 
 ##############################################################################
 # Main
