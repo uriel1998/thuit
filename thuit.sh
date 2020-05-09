@@ -117,7 +117,7 @@ function find_missing_categories() {
     
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
         ProgressBar $i ${#uniq_launchers[@]}
-        if [[ "${Categories[$i]}" == "None" ]];
+        if [[ "${Categories[$i]}" == "None" ]];then
             if [ $FILEOUT =1 ];then
                 printf "No category for %s in file\n%s\n "${Name[$i]}" "${uniq_launchers[$i]}" >> "$OUTFILE"
             else
