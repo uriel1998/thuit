@@ -198,51 +198,83 @@ function find_duplicates() {
 function find_bad (){
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
         
-        TestExec=""
-
-
-
-
-        # use awk {NR} like with b's project to get number of fields
-        # treat each field separately
-        # eval for bash, conf, etc
-
-        #TODO - better parsing of the exec line
-
-        #TODO - READLINK DOES NOT SEEM TO WORK????
-        #Does it contain cxmenu?
-        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-        fi
+        
+        # I know already this is going to fail on some, because of this\ convention\ 
+        
+        PartsOfExec=$(echo "${Exec[$i]}" | awk -F ' ' '{print NF1}')
         
         
+        #Splitting Exec string into an array
+        read -r -a TestExec <<< "${Exec[$i]}"
+        
+    
+        #iterating over each part of the exec string so that we can handle complex
+        #situations more easily.
+        for part in "${TestExec[@]}"; do
+
+            #wouldn't case work better here?
+            #$part is variable, not "Exec[$i]}"
+            #is it crossover
+            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            fi
+
+
                 #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
+
+            #is is dosbox
+            if [[ "${Exec[$i]}" == *"dosbox"* ]]; then
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            fi
+
+
+            #is it bash
+            if [ -z "$TestExec" ];then
+                TestExec=$(readlink ${Exec[$i]})
+            fi
+
+
+            #is it a variable
+            if [[ "${Exec[$i]}" == *'"'* ]]; then
+                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            fi
+
+
+            #steam steam://rungameid/563560
+            
+            #is it steam
+            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            fi
+                    
+            #is it wine
+            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
+                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+            fi
+        
+                #/home/steven/apps/MultiMC/MultiMC
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+        
+        
+        done
+
+TABS=$(echo "$line" | awk -F ' '  )
+
+        
+
    
         #Does it contain dosbox?
-        if [[ "${Exec[$i]}" == *"dosbox"* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-        fi
         
         #Does it contain steam?
-        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-        fi
+
 
         #Does it contain wineprefix
-        if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
 
-        fi
 
         #does is it enclosed in quotes with %u at the end or somesuch:
-        if [[ "${Exec[$i]}" == *'"'* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-        fi
+
 
         #Is it "regular"?
-        if [ -z "$TestExec" ];then
-            TestExec=$(readlink ${Exec[$i]})
-        fi
 
 
 
@@ -258,8 +290,6 @@ function find_bad (){
                 
                 #if dosbox, check each conf file
                 #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
-                #/home/steven/apps/MultiMC/MultiMC
-                #steam steam://rungameid/563560
                 
                 #-probably best way (game id is at end of filename)
                 #/home/steven/.steam/steam/steamapps/appmanifest_563560.acf
