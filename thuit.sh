@@ -52,12 +52,12 @@ function find_desktop() {
 
     directory_array+=( $(if [ -d ~/desktop ];then realpath ~/desktop;fi) )
     directory_array+=( $(if [ -d ~/Desktop ];then realpath ~/Desktop;fi) )
-    directory_array+=( $(if [ -d ~/.gnome/apps ];then realpath ~/.gnome/apps;fi) )
-    directory_array+=( $(if [ -d ~/.local/share/applications ];then realpath ~/.local/share/applications;fi) )
-    directory_array+=( $(if [ -d /usr/share/applications ];then echo "/usr/share/applications";fi) )
-    directory_array+=( $(if [ -d /usr/local/share/applications ];then echo "/usr/local/share/applications";fi) )
-    directory_array+=( $(if [ -d /usr/share/gdm/applications ];then echo "/usr/share/gdm/applications";fi) )
-    directory_array+=( $(if [ -d /usr/share/applications/kde ];then echo "/usr/share/applications/kde";fi) )
+    #directory_array+=( $(if [ -d ~/.gnome/apps ];then realpath ~/.gnome/apps;fi) )
+    #directory_array+=( $(if [ -d ~/.local/share/applications ];then realpath ~/.local/share/applications;fi) )
+    #directory_array+=( $(if [ -d /usr/share/applications ];then echo "/usr/share/applications";fi) )
+    #directory_array+=( $(if [ -d /usr/local/share/applications ];then echo "/usr/local/share/applications";fi) )
+    #directory_array+=( $(if [ -d /usr/share/gdm/applications ];then echo "/usr/share/gdm/applications";fi) )
+    #directory_array+=( $(if [ -d /usr/share/applications/kde ];then echo "/usr/share/applications/kde";fi) )
 
     # I am tempted to put /etc/xdg/autostart and ~/.config/autostart in here, but those 
     # have some special things that I'd like to avoid...
@@ -197,15 +197,22 @@ function find_duplicates() {
 
 function find_bad (){
     for ((i = 0; i < ${#uniq_launchers[@]}; i++));do
+        
         TestExec=""
-        TestTryExec=""
-#TODO - READLINK DOES NOT SEEM TO WORK????
+
+
+
+
+        # use awk {NR} like with b's project to get number of fields
+        # treat each field separately
+        # eval for bash, conf, etc
+
+        #TODO - better parsing of the exec line
+
+        #TODO - READLINK DOES NOT SEEM TO WORK????
         #Does it contain cxmenu?
         if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
             TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            if [ "${TryExec[$i}" != "None" ];then   # TODO:  TRYEXEC is sometimes just the base without the config
-                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
-            fi
         fi
         
         
@@ -213,35 +220,28 @@ function find_bad (){
    
         #Does it contain dosbox?
         if [[ "${Exec[$i]}" == *"dosbox"* ]]; then
-
-
-
             TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            if [ "${TryExec[$i}" != "None" ];then 
-                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
-            fi
         fi
         
         #Does it contain steam?
         if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
             TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            if [ "${TryExec[$i}" != "None" ];then 
-                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
-            fi
         fi
+
         #Does it contain wineprefix
         if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
             TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            if [ "${TryExec[$i}" != "None" ];then 
-                TestTryExec=$(printf "%s" "${TryExec[$i]}" | cut -d \" -f 2)
-            fi
+
         fi
+
+        #does is it enclosed in quotes with %u at the end or somesuch:
+        if [[ "${Exec[$i]}" == *'"'* ]]; then
+            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+        fi
+
         #Is it "regular"?
         if [ -z "$TestExec" ];then
             TestExec=$(readlink ${Exec[$i]})
-            if [ "${TryExec[$i}" != "None" ];then 
-                TestTryExec=$(readlink ${TryExec[$i]})
-            fi
         fi
 
 
@@ -249,9 +249,7 @@ function find_bad (){
 
         
         if [ ! -f "$TestExec" ];then
-            if [ ! -f "$TestTryExec" ];then
                 BadExec+=("$i")
-            fi
         fi
         
    
@@ -275,6 +273,19 @@ function find_bad (){
                 
                 
     done
+    
+    
+    #Display results
+    printf "\n\n"
+    for ((i = 0; i < ${#BadExec[@]}; i++));do
+            one=$(echo "${BadExec[$i]}" | awk '{print $1}')
+            two=$(echo "${NameDupe[$i]}" | awk '{print $2}')
+            if [ $FILEOUT = 1 ];then
+                printf "Bad Exec name \n%s in file \n%s \n\n" "${Exec[$one]}" "${uniq_launchers[$one]}"  >> "$OUTFILE"
+            else
+                 printf "Bad Exec name \n%s in file \n%s \n\n" "${Exec[$one]}" "${uniq_launchers[$one]}"  
+            fi
+        done
 }
 
 ##############################################################################
@@ -358,7 +369,7 @@ if [ "$CATEGORIES" = "1" ];then
     echo "Analyzing for missing categories now."
     find_missing_categories
 fi
-
+find_bad
 
 #not working/existing desktop files
 #find_bad
