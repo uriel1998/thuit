@@ -207,50 +207,59 @@ function find_bad (){
         #Splitting Exec string into an array
         read -r -a TestExec <<< "${Exec[$i]}"
         
-    
+     
+                # Crossover - does the first thing (before the %u) exist?
+                
+                
+                
+                
+                #-probably best way (game id is at end of filename)
+                #/home/steven/.steam/steam/steamapps/appmanifest_563560.acf
+                #- could try looking in here, but holy fuckballs
+                #/home/steven/.steam/steam/userdata/58476723/563560/
+                
+                #1. Find /Unix
+                #2. Convert all \\ to \
+                #3. Run as with crossover above
+                #env WINEPREFIX="/home/steven/Games/PvZ" /home/ubuntu/buildbot/runners/wine/lutris-4.21-x86_64/bin/wine C:\\\\windows\\\\command\\\\start.exe /Unix /home/steven/Games/PvZ/dosdevices/c:/ProgramData/Microsoft/Windows/Start\\ Menu/Programs/PopCap\\ Games/Plants\\ vs.\\ Zombies/Play\\ Plants\\ vs.\\ Zombies.lnk
         #iterating over each part of the exec string so that we can handle complex
         #situations more easily.
         for part in "${TestExec[@]}"; do
-
-            #wouldn't case work better here?
-            #$part is variable, not "Exec[$i]}"
-            #is it crossover
-            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            fi
-
-
+        
+            case "$part" in 
+    
+                #This may no longer be needed either...
+                *cxoffice*)
+                    TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
+                    ;;
+                
+                #if dosbox, check each conf file
+                #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
+                *dosbox*) # this might be unneeded due to teh separation out
+                    ;;
+                *bash *)
+                    ;;
+                *'"'*)  #in case this might be better to do as an array of % and $
+                    ;;
+                
+                ^--*)#might not be right syntax, basically stripping off any options
+                    ;;
+                ^-*)  #might not be right syntax, basically stripping off any options
+                    ;;
+                ^steam)
+                    #test if just the word steam
+                    ;;
+                ^steam:*)
+                    #steamgame argument
+                    ;;
+                    
+                    
+                    
+                    
+                    
+                    
                 #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
 
-            #is is dosbox
-            if [[ "${Exec[$i]}" == *"dosbox"* ]]; then
-            TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            fi
-
-
-            #is it bash
-            if [ -z "$TestExec" ];then
-                TestExec=$(readlink ${Exec[$i]})
-            fi
-
-
-            #is it a variable
-            if [[ "${Exec[$i]}" == *'"'* ]]; then
-                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            fi
-
-
-            #steam steam://rungameid/563560
-            
-            #is it steam
-            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            fi
-                    
-            #is it wine
-            if [[ "${Exec[$i]}" == *"cxoffice"* ]]; then
-                TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
-            fi
         
                 #/home/steven/apps/MultiMC/MultiMC
             TestExec=$(printf "%s" "${Exec[$i]}" | cut -d \" -f 2)
@@ -284,22 +293,7 @@ TABS=$(echo "$line" | awk -F ' '  )
                 BadExec+=("$i")
         fi
         
-   
-                # Crossover - does the first thing (before the %u) exist?
-                
-                
-                #if dosbox, check each conf file
-                #/home/steven/apps/dbgl/DOSBox-0.74/dosbox -conf "/home/steven/apps/dbgl/DOSBox-0.74/dosbox.conf" -conf "/home/steven/apps/dbgl/profiles/8.conf"
-                
-                #-probably best way (game id is at end of filename)
-                #/home/steven/.steam/steam/steamapps/appmanifest_563560.acf
-                #- could try looking in here, but holy fuckballs
-                #/home/steven/.steam/steam/userdata/58476723/563560/
-                
-                #1. Find /Unix
-                #2. Convert all \\ to \
-                #3. Run as with crossover above
-                #env WINEPREFIX="/home/steven/Games/PvZ" /home/ubuntu/buildbot/runners/wine/lutris-4.21-x86_64/bin/wine C:\\\\windows\\\\command\\\\start.exe /Unix /home/steven/Games/PvZ/dosdevices/c:/ProgramData/Microsoft/Windows/Start\\ Menu/Programs/PopCap\\ Games/Plants\\ vs.\\ Zombies/Play\\ Plants\\ vs.\\ Zombies.lnk
+  
                 
                 
     done
